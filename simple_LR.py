@@ -31,6 +31,6 @@ linear_reg = LinearRegression()
 linear_reg.fit(x_training, y_training)
 predicted_values = linear_reg.predict(x_testing)
 
-print("Rooted Mean Squared Error is ", np.sqrt(np.mean((y_testing - predicted_values) ** 2)))
-
+print("\nThe Rooted Mean Squared Error is ", np.sqrt(np.mean((y_testing - predicted_values) ** 2)))
+print("The Learned Function is y = ", linear_reg.intercept_, " +", linear_reg.coef_[0], "x\n")
 #rmse = root_mean_squared_error(y, )
