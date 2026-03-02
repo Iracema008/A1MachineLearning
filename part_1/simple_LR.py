@@ -25,7 +25,7 @@ is the total number of examples in the dataset.
 df = pd.read_csv('study_data.csv')
 x = df.drop('Score', axis=1)
 y =df['Score']
-x_training, x_testing, y_training, y_testing = train_test_split(x,y, test_size=0.2, random_state=142)
+x_training, x_testing, y_training, y_testing = train_test_split(x,y, test_size=0.2, random_state=12)
 
 linear_reg = LinearRegression()
 linear_reg.fit(x_training, y_training)
