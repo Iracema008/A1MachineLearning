@@ -70,6 +70,11 @@ class Perceptron:
 perceptron = Perceptron(learning_rate=0.01, n_iters=1000)
 perceptron.fit(x_train, y_train)
 
-y_pred = perceptron.predict(x_test)
-accuracy  = accuracy_score(y_test, y_pred)
-print("Perceptron Accuracy: ", accuracy)
+y_test_pred = perceptron.predict(x_test)
+y_train_pred = perceptron.predict(x_train)
+
+from sklearn.metrics import accuracy_score
+train_accuracy  = np.mean(y_train_pred == y_train)
+test_accuracy = np.mean(y_test_pred == y_test)
+print('Train accuracy:', train_accuracy)
+print('Test accuracy:', test_accuracy)
