@@ -41,7 +41,33 @@ def rmse(X, y, w):
 train_rmse = rmse(biased_x_training, y_training, w_hat)
 test_rmse = rmse(biased_x_testing, y_testing, w_hat)
 
-print("testing rsme: ", train_rmse)
-print("training rsme: ", test_rmse)
+print("train rsme: ", train_rmse)
+print("test rsme: ", test_rmse)
 
 '''Normalize variables '''
+columns = ['T', 'P', 'TC', 'SV']
+mean = df[columns].mean()
+standard_dev = df[columns].std()
+
+normalized_df = df.copy()
+normalized_df[columns] = (df[columns] - mean) / standard_dev
+
+# Treat any value greater than 2 standard deviations from the mean as an outlier
+out = (normalized_df[columns].abs() <= 2).all(axis=1)
+remaining = normalized_df[out]
+
+'''Retrain the linear regression model using the normalized dataset by computing 𝒘𝒘� as you did in step'''
+X_norm = remaining[['T', 'P', 'TC', 'SV']].values
+y_norm = remaining['Idx'].values
+
+x_training_norm, x_testing_norm, y_training_norm, y_testing_norm = train_test_split(X_norm,y_norm, test_size=0.2, random_state=2)
+'''Calculate training and testing RMSE.'''
+norm_biased_x_training = bias_column(x_training_norm)
+norm_biased_x_testing = bias_column(x_testing_norm)
+
+w_hat_norm = least_squared(norm_biased_x_training, y_training_norm)
+train_rmse_norm = rmse(norm_biased_x_training, y_training_norm, w_hat_norm)
+test_rmse_norm  = rmse(norm_biased_x_testing,  y_testing_norm,  w_hat_norm)
+
+print("normalized training rmse: ", train_rmse_norm)
+print("normalized testing rmse: ", test_rmse_norm)
