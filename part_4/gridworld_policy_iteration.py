@@ -137,26 +137,83 @@ def random_policy(env):
 
 def policy_evaluation(env, V, pi, gamma, noise):
     V_new = V.copy()
-    """
-    TODO: Implement one swep policy evaluation to compute V(s) given policy pi:
-    update V(s) given policy pi, the environment dynamics, and gamma
-    """
+    
+    for r in range(env.H):
+        for c in range(env.W):
+            s = (r, c)
+            
+            # Terminal states and obstacles have a value of 0
+            if env.is_terminal(s) or env.is_obstacle(s):
+                continue
+                
+            v_s = 0.0
+            for a in range(4):  # 4 actions: UP, RIGHT, DOWN, LEFT
+                prob_a = pi[r, c, a]
+                if prob_a == 0:
+                    continue
+                    
+                q_sa = 0.0
+                # transition_dist gives us the possible next states and their probabilities
+                for s_next, p_trans in transition_dist(env, s, a, noise):
+                    reward = env.reward(s, a, s_next)
+                    q_sa += p_trans * (reward + gamma * V[s_next[0], s_next[1]])
+                    
+                v_s += prob_a * q_sa
+                
+            V_new[r, c] = v_s
+            
     return V_new
 
 def policy_improvement(env, V, gamma, noise):
     pi_new = np.zeros((env.H, env.W, 4))
-    """
-    TODO: Implement policy improvement: update pi greedily based on current V(s).
-    """
+    
+    for r in range(env.H):
+        for c in range(env.W):
+            s = (r, c)
+            
+            if env.is_terminal(s) or env.is_obstacle(s):
+                continue
+                
+            # Calculate expected returns (Q-values) for all actions
+            q_values = np.zeros(4)
+            for a in range(4):
+                for s_next, p_trans in transition_dist(env, s, a, noise):
+                    reward = env.reward(s, a, s_next)
+                    q_values[a] += p_trans * (reward + gamma * V[s_next[0], s_next[1]])
+                    
+            # Update policy to strictly choose the best action
+            best_action = np.argmax(q_values)
+            pi_new[r, c, best_action] = 1.0
+            
+    # The skeleton doesn't pass the old policy in the signature, 
+    # so we return a dummy True for stability and check it in the main loop.
     return pi_new, True
 
 def policy_iteration(env, gamma, noise, max_eval_iters=100, tol=1e-6):
     V = np.zeros((env.H, env.W))
     pi = random_policy(env)
     stable = False
-    """
-    TODO: Combine policy evaluation and improvement to perform policy iteration.
-    """
+    
+    while not stable:
+        # 1. Policy Evaluation loop
+        for _ in range(max_eval_iters):
+            V_new = policy_evaluation(env, V, pi, gamma, noise)
+            
+            # Check for convergence in the value function
+            delta = np.max(np.abs(V_new - V))
+            V = V_new
+            if delta < tol:
+                break
+                
+        # 2. Policy Improvement
+        pi_new, _ = policy_improvement(env,  V, gamma, noise)
+        
+        # 3. Check if the policy has stopped changing
+        if np.array_equal(pi, pi_new):
+            stable = True
+            
+        pi = pi_new
+        
     return V, pi
 
 def extract_path(env, pi, start, max_steps=50):
